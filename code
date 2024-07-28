@@ -1,0 +1,98 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+
+# Sample data (replace this with your actual dataset)
+data = pd.read_csv('Phishing1.csv')
+
+# Feature extraction from URLs
+def extract_features(url):
+    features = {}
+    features['url_length'] = len(url)
+    features['num_special_chars'] = sum([1 for char in url if char in ['?', '&', '=', '-', '_', '.']])
+    features['has_ip'] = int(any(char.isdigit() for char in url.split('/')))
+    features['num_subdomains'] = url.count('.') - 1
+    return features
+
+# Apply feature extraction
+url_features = data['url'].apply(lambda x: pd.Series(extract_features(x)))
+
+# Combine the extracted features with the original data
+data = pd.concat([data.drop('url', axis=1), url_features], axis=1)
+
+# Encode the labels if they are categorical
+label_encoder = LabelEncoder()
+data['label'] = label_encoder.fit_transform(data['label'])
+
+# Define features and labels
+X = data.drop('label', axis=1)
+y = data['label']
+
+# Split the dataset
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Standardize the data
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Check the preprocessed data
+print(X_train)
+print(y_train)
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import classification_report, confusion_matrix,precision_score,recall_score,f1_score,accuracy_score
+from matplotlib import pyplot as plt
+# Initialize models
+models = {
+    'KNN': KNeighborsClassifier(n_neighbors=5),
+    'Random Forest': RandomForestClassifier(n_estimators=100, random_state=42),
+    'Decision Tree': DecisionTreeClassifier(max_depth=10, random_state=42),
+    'Naive Bayes': GaussianNB()
+}
+# Initialize and train models
+knn = KNeighborsClassifier(n_neighbors=5)
+rf = RandomForestClassifier(n_estimators=100, random_state=42)
+dt = DecisionTreeClassifier(max_depth=10, random_state=42)
+nb = GaussianNB()
+models = {'KNN': knn, 'Random Forest': rf, 'Decision Tree': dt, 'Naive Bayes': nb}
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    print(f"Model: {name}")
+    print(confusion_matrix(y_test, y_pred))
+    print(classification_report(y_test, y_pred))
+# Train models and evaluate
+results = {}
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+    results[name] = {
+        'accuracy': accuracy,
+        'precision': precision,
+        'recall': recall,
+        'f1_score': f1
+    }
+
+# Convert results to DataFrame
+results_df = pd.DataFrame(results).T
+
+# Plotting separate graphs for each algorithm
+metrics = ['accuracy', 'precision', 'recall', 'f1_score']
+
+for model_name in results_df.index:
+    plt.figure(figsize=(10, 5))
+    plt.bar(metrics, results_df.loc[model_name], width=0.4, color=['blue', 'green', 'red', 'cyan'])
+    plt.title(f'{model_name} Performance Metrics')
+    plt.xlabel('Metrics')
+    plt.ylabel('Score')
+    plt.ylim(0, 1)
+    plt.show()
+#print(results_df)
