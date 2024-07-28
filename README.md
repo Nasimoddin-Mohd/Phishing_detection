@@ -26,8 +26,10 @@ This project aims to detect phishing websites using machine learning techniques.
    git clone https://github.com/yourusername/phishing-detection.git
    cd phishing-detection
 2. **Create and Activate a Virtual Environment**
+  ```bash
    python -m venv venv
 source venv/bin/activate   # On Windows use `venv\Scripts\activate
-3. **Install Dependencies**
+4. **Install Dependencies**
+    ```bash
    pip install -r requirements.txt
    
