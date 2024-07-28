@@ -28,7 +28,6 @@ This project aims to detect phishing websites using machine learning techniques.
 2. **Create and Activate a Virtual Environment**
   ```bash
    python -m venv venv
-source venv/bin/activate   # On Windows use `venv\Scripts\activate
-3. **Install Dependencies**
+   source venv/bin/activate   # On Windows use `venv\Scripts\activate
    pip install -r requirements.txt
    
